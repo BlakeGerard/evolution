@@ -22,7 +22,6 @@ typedef struct {
 
 void ActorPrint(const Actor* act);
 void ActorInitialize(Actor* act);
-Actor ActorCreate(Genotype g);
 
 float ActorResponse(const Actor* act, float x);
 void ActorFitness(Actor* act, const Phenotype* env, size_t env_len);

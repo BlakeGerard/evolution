@@ -21,16 +21,6 @@ void ActorInitialize(Actor* act) {
   act->status = EVO_STATUS_CLEAR;
 }
 
-Actor ActorCreate(Genotype g) {
-  Actor ret;
-  ret.g = g;
-  PhenotypeInitialize(&ret.p, &ret.g);
-  ret.fitness = 0;
-  ret.age = 0;
-  ret.status = EVO_STATUS_CLEAR;
-  return ret;
-}
-
 float ActorResponse(const Actor* act, float x) {
   float response = act->p.p0 * x + act->p.p1;
   return response;

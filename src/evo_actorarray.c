@@ -7,6 +7,7 @@
 #include "stdlib.h"
 #include "string.h" // for memcpy
 
+// Internal metrics
 static int actor_array_create_count = 0;
 static int actor_array_delete_count = 0;
 static unsigned long long actor_array_bytes_allocated = 0;
@@ -14,7 +15,7 @@ static unsigned long long actor_array_bytes_copied = 0;
 
 ActorArray ActorArrayCreate(unsigned capacity) {
   ActorArray arr;
-  arr.buf = (Actor*) malloc(sizeof(Actor) * capacity);
+  arr.buf = (Actor *)malloc(sizeof(Actor) * capacity);
   if (!arr.buf) {
     printf("[%s] Failed to allocate memory for ActorArray.\n", __func__);
     exit(EXIT_FAILURE);
@@ -27,25 +28,7 @@ ActorArray ActorArrayCreate(unsigned capacity) {
   return arr;
 }
 
-void ActorArrayResize(ActorArray* arr, unsigned new_capacity) {
-  if (new_capacity == arr->cap)
-    return;
-  
-  ActorArray tmp = ActorArrayCreate(new_capacity);
-  ActorArrayCopyTo(*arr, &tmp);
-  ActorArrayFree(arr);
-  *arr = tmp;    
-}
-
-void ActorArrayCopyTo(const ActorArray src, ActorArray* dst) {
-  unsigned copy_len = dst->cap < src.len ? dst->cap : src.len;
-  memcpy(dst->buf, src.buf, sizeof(Actor) * copy_len);
-  dst->len = copy_len;
-
-  actor_array_bytes_copied += sizeof(Actor) * copy_len;
-}
-
-void ActorArrayFree(ActorArray* arr) {
+void ActorArrayFree(ActorArray *arr) {
   free(arr->buf);
   arr->buf = NULL;
   arr->len = 0;
@@ -53,26 +36,25 @@ void ActorArrayFree(ActorArray* arr) {
   actor_array_delete_count += 1;
 }
 
-Actor* ActorArrayAccess(const ActorArray arr, unsigned index) {
+Actor *ActorArrayAccess(const ActorArray arr, unsigned index) {
   assert(index <= arr.len && "Out-of-bounds access to ActorArray");
   return &arr.buf[index];
 }
 
-Actor* ActorArrayPushBack(ActorArray* arr, const Actor* act) {
-  assert(arr->len + 1 <= arr->cap && "Attempted to PushBack to full ActorArray.");
-  Actor* existing = ActorArrayAccess(*arr, arr->len);
+Actor *ActorArrayPushBack(ActorArray *arr, const Actor *act) {
+  assert(arr->len + 1 <= arr->cap &&
+         "Attempted to PushBack to full ActorArray.");
+  Actor *existing = ActorArrayAccess(*arr, arr->len);
   *existing = *act;
   arr->len += 1;
   return existing;
 }
 
-void ActorArrayReset(ActorArray* arr) {
-  arr->len = 0;
-}
+void ActorArrayReset(ActorArray *arr) { arr->len = 0; }
 
 void ActorArraySwapActors(ActorArray arr, unsigned i, unsigned j) {
-  Actor* act_i = ActorArrayAccess(arr, i);
-  Actor* act_j = ActorArrayAccess(arr, j);
+  Actor *act_i = ActorArrayAccess(arr, i);
+  Actor *act_j = ActorArrayAccess(arr, j);
   Actor tmp = *act_i;
   *act_i = *act_j;
   *act_j = tmp;
@@ -83,14 +65,23 @@ void ActorArrayShuffle(ActorArray arr) {
 
   if (n == 1)
     return;
-  
+
   for (unsigned i = 0; i <= n - 2; ++i) {
     unsigned j = randRange(i, n - 1);
     ActorArraySwapActors(arr, i, j);
   }
 }
 
-void ActorArrayInitializeToCapacity(ActorArray* arr) {
+void ActorArrayInitializeActors(ActorArray* arr, size_t num) {
+  assert(num <= arr->cap &&
+         "Requested initialization of more actors than the array's capacity.");
+  for (size_t i = 0; i < num; ++i) {
+    ActorInitialize(ActorArrayAccess(*arr, i));
+    arr->len += 1;
+  }
+}
+
+void ActorArrayInitializeToCapacity(ActorArray *arr) {
   arr->len = arr->cap;
   for (unsigned i = 0; i < arr->len; ++i)
     ActorInitialize(ActorArrayAccess(*arr, i));
@@ -110,7 +101,7 @@ void ActorArrayPrint(const ActorArray arr) {
 // EVO_STATUS_TOURNAMENT_SELECTED maps to EVO_STATUS_SELECTED.
 void ActorArrayClearStatusesPreserveSelected(const ActorArray arr) {
   for (unsigned i = 0; i < arr.len; ++i) {
-    Actor* act = ActorArrayAccess(arr, i);
+    Actor *act = ActorArrayAccess(arr, i);
     if (act->status == EVO_STATUS_TOURNAMENT)
       act->status = EVO_STATUS_CLEAR;
     else if (act->status == EVO_STATUS_TOURNAMENT_SELECTED)
@@ -118,9 +109,10 @@ void ActorArrayClearStatusesPreserveSelected(const ActorArray arr) {
   }
 }
 
-void ActorArrayEvaluateActors(const ActorArray arr, const Phenotype* env, unsigned env_len) {
+void ActorArrayEvaluateActors(const ActorArray arr, const Phenotype *env,
+                              unsigned env_len) {
   for (unsigned i = 0; i < arr.len; ++i) {
-    Actor* act = ActorArrayAccess(arr, i);
+    Actor *act = ActorArrayAccess(arr, i);
     ActorFitness(act, env, env_len);
     act->age += 1;
   }

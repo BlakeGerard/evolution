@@ -11,8 +11,6 @@ typedef struct {
 
 // General utilities 
 ActorArray ActorArrayCreate(unsigned capacity);
-void ActorArrayResize(ActorArray* arr, unsigned new_capacity);
-void ActorArrayCopyTo(const ActorArray src, ActorArray* dst);
 Actor* ActorArrayAccess(const ActorArray arr, unsigned index);
 Actor* ActorArrayPushBack(ActorArray* arr, const Actor* act);
 void ActorArrayReset(ActorArray* arr);
@@ -22,7 +20,7 @@ void ActorArrayFree(ActorArray* arr);
 void ActorArrayShuffle(ActorArray arr);
 void ActorArraySwapActors(ActorArray arr, unsigned i, unsigned j);
 
-void ActorArrayInitializeToCapacity(ActorArray* arr);
+void ActorArrayInitializeActors(ActorArray* arr, size_t num);
 void ActorArrayPrint(const ActorArray arr);
 void ActorArrayClearStatusesPreserveSelected(const ActorArray arr);
 void ActorArrayEvaluateActors(const ActorArray arr, const Phenotype* env, unsigned env_len);

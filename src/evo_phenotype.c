@@ -8,7 +8,6 @@ void PhenotypeMapFromGenotype(Phenotype* p, const Genotype* g) {
 }
 
 void PhenotypeInitialize(Phenotype* p, Genotype* g) {
-  GenotypeRecombine(g);
   PhenotypeMapFromGenotype(p, g);
 }
 
