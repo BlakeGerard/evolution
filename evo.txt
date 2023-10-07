@@ -1,0 +1,177 @@
+# Evolutionary fun
+
+Note: Any bit representations are arbitrary.
+
+## Genotype
+
+Maternal and Paternal Genes are represented with 32 bits. These are not to be viewed
+directly as 32-bit integers. Externally to the Genotype, we define a chromosomal "segment"
+as being 4-bits, where each chromosome can be viewed as collections of 4-bit segments.
+
+> Genotype {
+>   p = 0000 0000 0000 0000 0000 0000 0000 0000
+>   m = 1111 1111 1111 1111 1111 1111 1111 1111
+> }
+
+## Phenotype
+
+The first problem to solve is linear function approximation.
+So the phenotype will just be the coefficients of the general
+linear function y=mx+b.
+
+> Phenotype {
+>   p0 = 00000000 00000000 00000000 00000000f
+>   p1 = 11111111 11111111 11111111 11111111f
+> }
+
+## Actor
+
+An Actor consists of a Genotype and a Phenotype, along with space for floating
+point fitness score.
+
+> Actor {
+>   Genotype g
+>   Phenotype p
+>   float f
+> }
+
+## Evolutionary Operators
+
+### Genotype Mutation
+
+1. Bit-wise random flip, equal probability (default)
+
+This method flips each bit of the Genotype with equal, configurable probability.
+A limitation of this method is that, if we view the two chromosomes
+of the Genotype directly as 32-bit integers, a mutation in the more-significant
+bits would have an outsized effect on the Phenotype.
+
+### Genotype Crossover
+
+One source of genetic variation is genotypic crossover. This is where "segments"
+of each parental chromosome swap to the other chromosome with some probability.
+From Wikipedia, these chromosomal "segments" tend to crossover based on physical
+location on the chromosome, and with relatively stable probability.
+
+Example:
+
+> p = aaaa bbbb cccc dddd eeee ffff gggg hhhh
+> m = iiii jjjj kkkk llll mmmm nnnn oooo pppp
+
+After crossover:
+
+> p = aaaa bbbb kkkk dddd eeee ffff gggg pppp
+> m = iiii jjjj cccc llll mmmm nnnn oooo hhhh
+                ----                     ----   <- Points of crossover
+
+### Genotype -> Phenotype Mapping
+
+For now, we're just mapping:
+
+Genotype::p -> Phenotype p0
+Genotype::m -> Phenotype p1
+
+### Selection
+
+1. Tournament Selection
+
+Before tournament:
+              CLEAR -> CLEAR
+         TOURNAMENT -> CLEAR
+           SELECTED -> SELECTED
+TOURNAMENT_SELECTED -> SELECTED
+
+During tournament:
+              CLEAR -> TOURNAMENT
+         TOURNAMENT -> TOURNAMENT
+           SELECTED -> TOURNAMENT_SELECTED
+TOURNAMENT_SELECTED -> TOURNAMENT_SELECTED
+
+After tournament:
+              CLEAR -> No store
+         TOURNAMENT -> Store
+           SELECTED -> No store
+TOURNAMENT_SELECTED -> No Store
+
+### Reproduction
+
+1. Fixed Offspring Count
+
+[ a ], 2, 3                0.5 ciel * 2 = 2, len + 1
+ 
+[ a b ], 2, 4             1.0 ciel * 2 = 2, len + 1 - 1
+
+[ a b c ], 4, 7           1.5 ciel * 2 = 4, len + 1
+
+[ a b c d ], 4, 8         2.0 ciel * 2 = 4, len + 1 - 1
+
+[ a b c d e ], 6, .       2.5 ciel * 2 = 6
+
+[ a b c d e f ], 6      3.0 ciel * 2 = 6
+
+[ a b c d e f g ], 8    3.5 ciel * 2 = 8
+
+[ a b c d e f g h ], 8  4.0 ciel * 2 = 8
+
+# Questions
+
+* Should we always select an even number of actors to reproduce?
+  The reason is that we could always fully pair-up the actors.
+  That would eliminate an artificial mating bias, since each actor
+  has the same amount of genetic information passed on.
+  However, it does imply a coupled mating strategy, which may not
+  always be favorable.
+
+  If we select an odd number to reproduce, there will be one actor
+  left without a mate. In this case, the actor will asexually reproduce
+  while still undergoing genetypic crossover and mutation.
+
+
+# Scribble
+
+## Resize
+
+new_capacity < arr.cap
+ arr
+ buf = [ a b c d _ _ _ _ ]
+ len = 4
+ cap = 8
+
+ tmp
+ buf = [ _ _ ]
+ len = 0
+ cap = 2
+
+ AACopyAll(arr, tmp)
+
+ tmp
+ buf = [ a b ]
+ len = 2
+ cap = 2
+
+ AAFree(&arr);
+ *arr = tmp
+
+ arr
+ buf = [ a b ]
+ len = 2
+ cap = 2
+
+ tmp goes out of scope
+
+new_capacity >= arr.cap
+ arr
+ buf = [ a b c d ]
+ len = 4
+ cap = 4
+
+ tmp = [ _ _ _ _ _ _ _ _ ]
+ len = 0
+ cap = 8
+
+ AACopyAll(arr, tmp);
+
+ tmp = [ a b c d _ _ _ _ ]
+ len = 4
+ cap = 8
+ 
