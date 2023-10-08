@@ -9,26 +9,40 @@ typedef struct {
   unsigned cap;
 } ActorArray;
 
-// General utilities 
+// Create an empty ActorArray with given capacity.
+// Memory is uninitialized.
 ActorArray ActorArrayCreate(unsigned capacity);
-void ActorArrayResize(ActorArray* arr, unsigned new_capacity);
-void ActorArrayCopyTo(const ActorArray src, ActorArray* dst);
-Actor* ActorArrayAccess(const ActorArray arr, unsigned index);
-Actor* ActorArrayPushBack(ActorArray* arr, const Actor* act);
-void ActorArrayReset(ActorArray* arr);
+
+// Free the underlying memory, set its pointer to NULL, and zero
+// out len and cap.
 void ActorArrayFree(ActorArray* arr);
 
-// Algorithms
-void ActorArrayShuffle(ActorArray arr);
+// Initialize num Actors in the ActorArray and set
+// the ActorArray::len equal to num. A pointer to the memory
+// space of each Actor is passed to ActorInitialize()
+void ActorArrayInitializeActors(ActorArray* arr, size_t num);
+
+// Get pointer to Actor at the given index.
+// index must be <= ActorArray::len.
+Actor* ActorArrayAccess(const ActorArray arr, unsigned index);
+
+// Copy the contents at the given Actor* to the back of the ActorArray
+Actor* ActorArrayPushBack(ActorArray* arr, const Actor* act);
+
+// Set the ActorArray::len to zero. The underlying memory is untouched.
+void ActorArrayReset(ActorArray* arr);
+
+// Print the ActorArray to the stdout.
+void ActorArrayPrint(const ActorArray arr);
+
+// Swap the Actors at the given indices.
 void ActorArraySwapActors(ActorArray arr, unsigned i, unsigned j);
 
-void ActorArrayInitializeToCapacity(ActorArray* arr);
-void ActorArrayPrint(const ActorArray arr);
-void ActorArrayClearStatusesPreserveSelected(const ActorArray arr);
-void ActorArrayEvaluateActors(const ActorArray arr, const Phenotype* env, unsigned env_len);
+// Shuffle the array in-place.
+void ActorArrayShuffle(ActorArray arr);
 
+// Internal metrics
 void ActorArrayPrintFitnessStatistics(const ActorArray arr);
-
 void PrintActorArrayMetrics();
 
 #endif

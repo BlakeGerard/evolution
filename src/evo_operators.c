@@ -6,6 +6,28 @@
 #include "math.h"
 #include "stdio.h"
 
+void EvaluateActors(ActorArray arr, const Phenotype *env, unsigned env_len) {
+  for (unsigned i = 0; i < arr.len; ++i) {
+    Actor *act = ActorArrayAccess(arr, i);
+    ActorFitness(act, env, env_len);
+    act->age += 1;
+  }
+}
+
+// Reset statuses before a running a selection tournament.
+// EVO_STATUS_CLEAR and EVO_STATUS_SELECTED remain the same.
+// EVO_STATUS_TOURNAMENT maps to EVO_STATUS_CLEAR.
+// EVO_STATUS_TOURNAMENT_SELECTED maps to EVO_STATUS_SELECTED.
+static void TournamentSelectionUpdateStatuses(ActorArray arr) {
+  for (unsigned i = 0; i < arr.len; ++i) {
+    Actor *act = ActorArrayAccess(arr, i);
+    if (act->status == EVO_STATUS_TOURNAMENT)
+      act->status = EVO_STATUS_CLEAR;
+    else if (act->status == EVO_STATUS_TOURNAMENT_SELECTED)
+      act->status = EVO_STATUS_SELECTED;
+  }
+}
+
 // We only want to select a subset of the population for reproduction.
 // We do this by multiplying the current population size by
 // the selection quota and rounding up.
@@ -19,18 +41,18 @@ static unsigned TournamentSelectionNumSelections(unsigned num_actors,
   return num_selections;
 }
 
-ActorArray TournamentSelection(const ActorArray actors,
-                               unsigned tournament_size, float quota) {
-  unsigned selection_size = TournamentSelectionNumSelections(actors.len, quota);
+void TournamentSelection(ActorArray arena_A, ActorArray arena_B,
+                         unsigned tournament_size, float quota) {
+  unsigned selection_size = TournamentSelectionNumSelections(arena_A.len, quota);
   ActorArray selected = ActorArrayCreate(selection_size);
 
   unsigned num_selected = 0;
   while (num_selected < selection_size) {
     Actor *winner = NULL;
     for (unsigned i = 0; i < tournament_size; ++i) {
-      size_t index = randRange(0, actors.len - 1);
+      size_t index = randRange(0, arena_A.len - 1);
       printf("index %zu\n", index);
-      Actor *actor = ActorArrayAccess(actors, index);
+      Actor *actor = ActorArrayAccess(arena_A, index);
 
       if (actor->status == EVO_STATUS_TOURNAMENT ||
           actor->status == EVO_STATUS_TOURNAMENT_SELECTED) {
@@ -41,8 +63,7 @@ ActorArray TournamentSelection(const ActorArray actors,
       if (actor->status == EVO_STATUS_CLEAR) {
         printf("Actor clear -> tournament\n");
         actor->status = EVO_STATUS_TOURNAMENT;
-      }
-      else if (actor->status == EVO_STATUS_SELECTED) {
+      } else if (actor->status == EVO_STATUS_SELECTED) {
         printf("Actor selected -> tournament_selected\n");
         actor->status = EVO_STATUS_TOURNAMENT_SELECTED;
       }
@@ -52,23 +73,22 @@ ActorArray TournamentSelection(const ActorArray actors,
         winner = actor;
       }
     }
-    
+
     if (winner->status == EVO_STATUS_TOURNAMENT) {
       winner->status = EVO_STATUS_SELECTED;
-      ActorArrayPushBack(&selected, winner);
+      ActorArrayPushBack(&arena_B, winner);
       ++num_selected;
       printf("num_selected: %d\n", num_selected);
     }
-    ActorArrayClearStatusesPreserveSelected(actors);
+    TournamentSelectionUpdateStatuses(arena_A);
   }
-  assert(selected.len == num_selected &&
+  assert(arena_B.len == num_selected &&
          "Failed to select the requested number of Actors.");
-  return selected;
 }
 
-void ReproductionFixedOffspringCount(ActorArray *actors, ActorArray selected,
+void ReproductionFixedOffspringCount(ActorArray arena_A, ActorArray arena_B,
                                      unsigned num_offspring) {
   unsigned generation_len =
-      selected.len + ((unsigned)ceil(selected.len / 2.0) * num_offspring);
+      arena_B.len + ((unsigned)ceil(arena_B.len / 2.0) * num_offspring);
   (void)generation_len;
 }

@@ -10,7 +10,7 @@ void ActorPrint(const Actor* act) {
   printf("Fitness: %.3f\n", act->fitness);
   printf("Age: %d\n", act->age);
   printf("Status: %d\n", act->status);
-  printf("}\n\n");
+  printf("}\n");
 }
 
 void ActorInitialize(Actor* act) {
@@ -21,17 +21,12 @@ void ActorInitialize(Actor* act) {
   act->status = EVO_STATUS_CLEAR;
 }
 
-Actor ActorCreate(Genotype g) {
-  Actor ret;
-  ret.g = g;
-  PhenotypeInitialize(&ret.p, &ret.g);
-  ret.fitness = 0;
-  ret.age = 0;
-  ret.status = EVO_STATUS_CLEAR;
-  return ret;
+void ActorRealizePhenotype(Actor* act) {
+  PhenotypeInitialize(&act->p, &act->g);
 }
 
-float ActorResponse(const Actor* act, float x) {
+float ActorResponse(Actor* act, float x) {
+  ActorRealizePhenotype(act);
   float response = act->p.p0 * x + act->p.p1;
   return response;
 }

@@ -7,14 +7,10 @@ void PhenotypeMapFromGenotype(Phenotype* p, const Genotype* g) {
   p->p1 = (float)(g->buf_[6]);
 }
 
-void PhenotypeInitialize(Phenotype* p, Genotype* g) {
-  GenotypeRecombine(g);
+void PhenotypeInitialize(Phenotype* p, const Genotype* g) {
   PhenotypeMapFromGenotype(p, g);
 }
 
 void PhenotypePrint(const Phenotype* p) {
-  printf("Phenotype {\n");
-  printf("  p0: %.3f\n", p->p0);
-  printf("  p1: %.3f\n", p->p1);
-  printf("}\n");
+  printf("Phenotype { p0: %.3f, p1: %.3f }\n", p->p0, p->p1);
 }

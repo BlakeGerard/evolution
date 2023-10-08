@@ -8,7 +8,7 @@ typedef struct {
 } Phenotype;
 
 void PhenotypeMapFromGenotype(Phenotype* p, const Genotype* g);
-void PhenotypeInitialize(Phenotype* p, Genotype* g);
+void PhenotypeInitialize(Phenotype* p, const Genotype* g);
 void PhenotypePrint(const Phenotype* p);
 
 #endif
