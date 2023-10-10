@@ -10,10 +10,10 @@
 #include "stdlib.h"
 #include "time.h"
 
-#define EVO_START_ACTORS 1
+#define EVO_START_ACTORS 100
 #define EVO_MAX_ACTORS 100
 
-#define EVO_N_ITERS 2
+#define EVO_N_ITERS 1
 #define EVO_SELECTION_QUOTA 0.5
 #define EVO_TOURNAMENT_SIZE 3
 #define EVO_REPRODUCTION_FIXED 2
@@ -44,7 +44,7 @@ static void evolution(const Phenotype *env, unsigned env_len, unsigned iters) {
 
     ActorArrayPrint(arena_A);
 
-    //    selection(arena_A, arena_B, EVO_SELECTION_QUOTA);
+    selection(arena_A, arena_B, EVO_SELECTION_QUOTA);
 
     //    reproduction(arena_A, arena_B);
   }

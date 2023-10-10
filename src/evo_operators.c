@@ -41,49 +41,74 @@ static unsigned TournamentSelectionNumSelections(unsigned num_actors,
   return num_selections;
 }
 
-void TournamentSelection(ActorArray arena_A, ActorArray arena_B,
-                         unsigned tournament_size, float quota) {
-  unsigned selection_size = TournamentSelectionNumSelections(arena_A.len, quota);
-  ActorArray selected = ActorArrayCreate(selection_size);
+static Actor *TournamentSelectionRunTournament(ActorArray arena_A,
+                                               unsigned tournament_size) {
+  assert(tournament_size >= 1 && "We can't run a size zero tournament.\n");
 
-  unsigned num_selected = 0;
-  while (num_selected < selection_size) {
-    Actor *winner = NULL;
-    for (unsigned i = 0; i < tournament_size; ++i) {
-      size_t index = randRange(0, arena_A.len - 1);
-      printf("index %zu\n", index);
-      Actor *actor = ActorArrayAccess(arena_A, index);
+  Actor *winner = NULL;
+  for (unsigned i = 0; i < tournament_size; ++i) {
+    size_t index = randRange(0, arena_A.len - 1);
+    Actor *actor = ActorArrayAccess(arena_A, index);
 
-      if (actor->status == EVO_STATUS_TOURNAMENT ||
-          actor->status == EVO_STATUS_TOURNAMENT_SELECTED) {
-        printf("Actor tournament|selected -> same\n");
-        continue;
-      }
-
-      if (actor->status == EVO_STATUS_CLEAR) {
-        printf("Actor clear -> tournament\n");
-        actor->status = EVO_STATUS_TOURNAMENT;
-      } else if (actor->status == EVO_STATUS_SELECTED) {
-        printf("Actor selected -> tournament_selected\n");
-        actor->status = EVO_STATUS_TOURNAMENT_SELECTED;
-      }
-
-      if (winner == NULL || actor->fitness < winner->fitness) {
-        printf("This should only happen three times\n"); // it's not
-        winner = actor;
-      }
+    printf("Rolled index %zu\n", index);
+    if (actor->status == EVO_STATUS_TOURNAMENT ||
+        actor->status == EVO_STATUS_TOURNAMENT_SELECTED) {
+      printf("Actor tournament|selected -> same\n");
+      continue;
     }
 
+    if (actor->status == EVO_STATUS_CLEAR) {
+      printf("Actor clear -> tournament\n");
+      actor->status = EVO_STATUS_TOURNAMENT;
+    } else if (actor->status == EVO_STATUS_SELECTED) {
+      printf("Actor selected -> tournament_selected\n");
+      actor->status = EVO_STATUS_TOURNAMENT_SELECTED;
+    }
+
+    if (winner == NULL || actor->fitness < winner->fitness) {
+      printf("Current winner at index %zu\n", index);
+      winner = actor;
+    }
+  }
+  return winner;
+}
+
+void TournamentSelection(ActorArray arena_A, ActorArray arena_B,
+                         unsigned tournament_size, float quota) {
+  unsigned num_selections =
+      TournamentSelectionNumSelections(arena_A.len, quota);
+
+  if (arena_A.len < num_selections) {
+    printf("We have fewer actors (%d) than the selection quota (%d)\n",
+           arena_A.len, num_selections);
+    return;
+  }
+
+  unsigned num_tournaments = 0;
+  unsigned times_winner_already_selected = 0;
+  unsigned num_selected = 0;
+  while (num_selected < num_selections) {
+    Actor *winner = TournamentSelectionRunTournament(arena_A, tournament_size);
+    ++num_tournaments;
+
     if (winner->status == EVO_STATUS_TOURNAMENT) {
+      printf("Made a selection.\n");
+
       winner->status = EVO_STATUS_SELECTED;
       ActorArrayPushBack(&arena_B, winner);
       ++num_selected;
-      printf("num_selected: %d\n", num_selected);
+    } else {
+      ++times_winner_already_selected;
+      printf("Winner was already selected\n");
     }
     TournamentSelectionUpdateStatuses(arena_A);
+    printf("============\n");
   }
-  assert(arena_B.len == num_selected &&
-         "Failed to select the requested number of Actors.");
+  printf("We ran %u tournaments to selected %u actors\n", num_tournaments,
+         num_selected);
+  printf("A tournament was won by an already selected actor %u times\n",
+         times_winner_already_selected);
+  ActorArrayPrint(arena_B);
 }
 
 void ReproductionFixedOffspringCount(ActorArray arena_A, ActorArray arena_B,
