@@ -13,7 +13,7 @@
 #define EVO_START_ACTORS 50
 #define EVO_MAX_ACTORS 100
 
-#define EVO_N_ITERS 2
+#define EVO_N_ITERS 20
 #define EVO_SELECTION_QUOTA 0.5
 #define EVO_TOURNAMENT_SIZE 3
 #define EVO_REPRODUCTION_FIXED 2
@@ -38,25 +38,16 @@ static void evolution(const EnvironmentArray env, unsigned iters) {
 
   ActorArrayInitializeActors(&arena_A, EVO_START_ACTORS);
   evaluation(arena_A, env);
+  ActorArrayPrintFitnessStatistics(arena_A);
 
   for (unsigned iter = 0; iter < iters; ++iter) {
-    evaluation(arena_A, env);
-
-    ActorArrayPrintFitnessStatistics(arena_A);
-
     selection(arena_A, &arena_B, EVO_SELECTION_QUOTA);
-
-    ActorArrayPrint(arena_B);
-
     reproduction(&arena_A, arena_B);
-
-    ActorArrayPrint(arena_A);
+    evaluation(arena_A, env);
+    ActorArrayPrintFitnessStatistics(arena_A);
   }
 
-  printf("Final cohort:\n");
-  evaluation(arena_A, env);
   ActorArrayPrint(arena_A);
-  ActorArrayPrintFitnessStatistics(arena_A);
 
   ActorArrayFree(&arena_A);
   ActorArrayFree(&arena_B);
@@ -80,6 +71,8 @@ int main(int argc, char* argv[]) {
   clock_t end = clock();
   double elapsed = (end - start) / (double)CLOCKS_PER_SEC;
   printf("Evolution time: %f\n", elapsed);
+
+  EnvironmentArrayFree(&env);
 
   PrintActorArrayMetrics();
 
