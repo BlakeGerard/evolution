@@ -4,14 +4,14 @@
 #include "stdbool.h"
 
 #ifdef DEBUG
-#define CHECKED_ACCESS(array, len, index) \
+#define CHECKED_ACCESS(array, len, index)                                      \
   ((index >= 0 && index < (len)) ? &(array)[index] : NULL
 #else
-#define CHECKED_ACCESS(array, len, index) \
-  &(array)[index]
+#define CHECKED_ACCESS(array, len, index) &(array)[index]
 #endif
 
 bool randProb(float probability);
 int randRange(int min, int max);
+float randFloat(float min, float max);
 
 #endif

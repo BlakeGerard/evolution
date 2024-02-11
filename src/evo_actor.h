@@ -1,8 +1,6 @@
 #ifndef EVO_ACTOR_H
 #define EVO_ACTOR_H
 
-#include "evo_phenotype.h"
-
 #include "stddef.h"
 
 typedef enum {
@@ -13,17 +11,14 @@ typedef enum {
 } ActorStatus;
 
 typedef struct {
-  Genotype g;
-  Phenotype p;
-  int age;
+  float m;
+  float b;
   float fitness;
   ActorStatus status;
 } Actor;
 
 void ActorPrint(const Actor* act);
-void ActorInitialize(Actor* act);
-void ActorRealizePhenotype(Actor* act);
-float ActorResponse(Actor* act, float x);
-void ActorFitness(Actor* act, const Phenotype* env, size_t env_len);
+void ActorInitializeRandom(Actor* act);
+float ActorResponse(const Actor* act, float x);
 
 #endif

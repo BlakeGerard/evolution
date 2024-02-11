@@ -15,7 +15,7 @@ static unsigned long long actor_array_bytes_copied = 0;
 
 ActorArray ActorArrayCreate(unsigned capacity) {
   ActorArray arr;
-  arr.buf = (Actor *)malloc(sizeof(Actor) * capacity);
+  arr.buf = (Actor*)malloc(sizeof(Actor) * capacity);
   if (!arr.buf) {
     printf("[%s] Failed to allocate memory for ActorArray.\n", __func__);
     exit(EXIT_FAILURE);
@@ -28,7 +28,7 @@ ActorArray ActorArrayCreate(unsigned capacity) {
   return arr;
 }
 
-void ActorArrayFree(ActorArray *arr) {
+void ActorArrayFree(ActorArray* arr) {
   free(arr->buf);
   arr->buf = NULL;
   arr->len = 0;
@@ -40,26 +40,26 @@ void ActorArrayInitializeActors(ActorArray* arr, size_t num) {
   assert(num <= arr->cap &&
          "Requested initialization of more actors than the array's capacity.");
   for (size_t i = 0; i < num; ++i) {
-    ActorInitialize(ActorArrayAccess(*arr, i));
+    ActorInitializeRandom(ActorArrayAccess(*arr, i));
     arr->len += 1;
   }
 }
 
-Actor *ActorArrayAccess(const ActorArray arr, unsigned index) {
+Actor* ActorArrayAccess(const ActorArray arr, unsigned index) {
   assert(index <= arr.len && "Out-of-bounds access to ActorArray");
   return &arr.buf[index];
 }
 
-Actor *ActorArrayPushBack(ActorArray *arr, const Actor *act) {
+Actor* ActorArrayPushBack(ActorArray* arr, const Actor* act) {
   assert(arr->len + 1 <= arr->cap &&
          "Attempted to PushBack to full ActorArray.");
-  Actor *existing = ActorArrayAccess(*arr, arr->len);
+  Actor* existing = ActorArrayAccess(*arr, arr->len);
   *existing = *act;
   arr->len += 1;
   return existing;
 }
 
-void ActorArrayReset(ActorArray *arr) { arr->len = 0; }
+void ActorArrayReset(ActorArray* arr) { arr->len = 0; }
 
 void ActorArrayPrint(const ActorArray arr) {
   printf("---------------\n");
@@ -70,8 +70,8 @@ void ActorArrayPrint(const ActorArray arr) {
 }
 
 void ActorArraySwapActors(ActorArray arr, unsigned i, unsigned j) {
-  Actor *act_i = ActorArrayAccess(arr, i);
-  Actor *act_j = ActorArrayAccess(arr, j);
+  Actor* act_i = ActorArrayAccess(arr, i);
+  Actor* act_j = ActorArrayAccess(arr, j);
   Actor tmp = *act_i;
   *act_i = *act_j;
   *act_j = tmp;
